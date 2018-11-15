@@ -5,8 +5,8 @@ public enum Message: Equatable {
     case endSummary
     case agree
     case start
-    case move(from: Position, to: Position, isBlack: Bool)
-    case moved(from: Position, to: Position, isBlack: Bool)
+    case move(from: Position, to: Position, isBlack: Bool, isPromoted: Bool)
+    case moved(from: Position, to: Position, isBlack: Bool, isPromoted: Bool)
     case gameOver(isIllegal: Bool)
     case result(Result)
 
@@ -55,15 +55,22 @@ public enum Message: Equatable {
             else { return nil }
 
             let suffix = line[toIndex...]
-            if suffix.isEmpty {
-                self = .move(from: from, to: to, isBlack: isBlack)
+            switch suffix {
+            case "":
+                self = .move(from: from, to: to, isBlack: isBlack, isPromoted: false)
                 return
-            } else if suffix == ",OK" {
-                self = .moved(from: from, to: to, isBlack: isBlack)
+            case "+":
+                self = .move(from: from, to: to, isBlack: isBlack, isPromoted: true)
                 return
+            case ",OK":
+                self = .moved(from: from, to: to, isBlack: isBlack, isPromoted: false)
+                return
+            case "+,OK":
+                self = .moved(from: from, to: to, isBlack: isBlack, isPromoted: true)
+                return
+            default:
+                return nil
             }
-
-            return nil
         }
 
         let parts = line.split(separator: ":")
@@ -100,10 +107,10 @@ extension String {
             self = "AGREE"
         case .start:
             self = "START"
-        case let .move(from, to, isBlack):
-            self = (isBlack ? "+" : "-") + from.description + to.description
-        case let .moved(from, to, isBlack):
-            self = (isBlack ? "+" : "-") + from.description + to.description + ",OK"
+        case let .move(from, to, isBlack, isPromoted):
+            self = (isBlack ? "+" : "-") + from.description + to.description + (isPromoted ? "+" : "")
+        case let .moved(from, to, isBlack, isPromoted):
+            self = (isBlack ? "+" : "-") + from.description + to.description + (isPromoted ? "+" : "") + ",OK"
         case let .gameOver(isIllegal):
             self = !isIllegal ? "#GAME_OVER" : "#ILLEGAL_MOVE"
         case let .result(result):

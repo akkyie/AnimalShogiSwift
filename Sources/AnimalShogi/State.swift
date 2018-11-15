@@ -21,7 +21,7 @@ public enum State: Equatable {
     case waitingEndSummary(id: String, isBlack: Bool)
     case starting(id: String, isBlack: Bool)
     case started(id: String, isBlack: Bool)
-    case moved(id: String, isBlack: Bool, from: Position, to: Position)
+    case moved(id: String, isBlack: Bool, from: Position, to: Position, isPromoted: Bool)
     case waitingResult(id: String, isBlack: Bool, isIllegal: Bool)
     case ended(id: String, isBlack: Bool, isIllegal: Bool, result: Result)
 
@@ -37,11 +37,11 @@ public enum State: Equatable {
             return .starting(id: id, isBlack: isBlack)
         case let (.starting(id, isBlack), .start):
             return .started(id: id, isBlack: isBlack)
-        case let (.started(id, _), .moved(from, to, isBlack)):
-            return .moved(id: id, isBlack: isBlack, from: from, to: to)
-        case let (.moved(id, _, _, _), .moved(from, to, isBlack)):
-            return .moved(id: id, isBlack: isBlack, from: from, to: to)
-        case let (.moved(id, isBlack, _, _), .gameOver(isIllegal)):
+        case let (.started(id, _), .moved(from, to, isBlack, isPromoted)):
+            return .moved(id: id, isBlack: isBlack, from: from, to: to, isPromoted: isPromoted)
+        case let (.moved(id, _, _, _, _), .moved(from, to, isBlack, isPromoted)):
+            return .moved(id: id, isBlack: isBlack, from: from, to: to, isPromoted: isPromoted)
+        case let (.moved(id, isBlack, _, _, _), .gameOver(isIllegal)):
             return .waitingResult(id: id, isBlack: isBlack, isIllegal: isIllegal)
         case let (.waitingResult(id, isBlack, isIllegal), .result(result)):
             return .ended(id: id, isBlack: isBlack, isIllegal: isIllegal, result: result)

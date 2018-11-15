@@ -14,26 +14,29 @@ public class RandomBrain: Brain {
             isBlack = _isBlack
             sendMessage(.agree)
         case (.started, _) where isBlack == true: // game started and you are black
-            let (from, to) = RandomBrain.thinkNext(board: board, isBlack: isBlack)
-            board.move(from: from, to: to)
-            sendMessage(.move(from: from, to: to, isBlack: isBlack))
-        case (.moved(_, !isBlack, let from, let to), _): // opponent moved
-            board.move(from: from, to: to)
-            let (from, to) = RandomBrain.thinkNext(board: board, isBlack: isBlack)
-            board.move(from: from, to: to)
-            sendMessage(.move(from: from, to: to, isBlack: isBlack))
+            next(sendMessage: sendMessage)
+        case (.moved(_, !isBlack, let from, let to, let isPromoted), _): // opponent moved
+            board.move(from: from, to: to, isPromoted: isPromoted)
+            next(sendMessage: sendMessage)
         default:
             break
         }
     }
 
-    private static func thinkNext(board: Board, isBlack: Bool) -> (from: Position, to: Position) {
+    private func next(sendMessage: (Message) -> Void) {
         let moves = board.pieces
             .filter { _, piece in piece.isBlack == isBlack }
             .flatMap { from, _ in
                 board.movablePoints(from: from).map { to in (from, to) }
-            }
+        }
         let randomIndex = Int.random(in: moves.indices)
-        return moves[randomIndex]
+        let (from, to) = moves[randomIndex]
+        var isPromoted = false
+        if board[from]!.promoted(on: to) != nil {
+            isPromoted = Bool.random()
+        }
+
+        board.move(from: from, to: to, isPromoted: isPromoted)
+        sendMessage(.move(from: from, to: to, isBlack: isBlack, isPromoted: isPromoted))
     }
 }

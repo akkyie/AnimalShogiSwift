@@ -21,8 +21,8 @@ let main = command(
     }
 
     let brain = RandomBrain()
-    let connection = Connection(host: host, port: port, logger: Logger.for("connection"))
-    let client = Client(connection: connection, logger: Logger.for("client"), brain: brain) { error in
+    let connection = Connection(host: host, port: port, logger: .for("connection"))
+    let client = Client(connection: connection, logger: .for("client"), brain: brain) { error in
         exit(error == nil ? 0 : 1)
     }
     client.start()

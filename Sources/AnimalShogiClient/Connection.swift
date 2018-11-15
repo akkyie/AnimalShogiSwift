@@ -29,20 +29,15 @@ public final class Connection {
         let endpoint = NWEndpoint.hostPort(host: .init(host), port: port)
         connection = NWConnection(to: endpoint, using: .tcp)
 
-        connection.stateUpdateHandler = { [logger, weak self] connectionState in
-            guard let sself = self else {
-                logger.errorMessage("self has already released")
-                return
-            }
-
+        connection.stateUpdateHandler = { [logger, unowned self] connectionState in
             queue.async {
                 logger.debugMessage("connection is \(connectionState)")
                 switch connectionState {
                 case let .waiting(error),
                      let .failed(error):
-                    sself.handler?(.error(error))
+                    self.handler?(.error(error))
                 case .ready:
-                    sself.receive()
+                    self.receive()
                 default:
                     break
                 }
@@ -50,9 +45,19 @@ public final class Connection {
         }
     }
 
+    deinit {
+        connection.forceCancel()
+    }
+
     public func start() {
         queue.async { [connection, queue] in
             connection.start(queue: queue)
+        }
+    }
+
+    public func cancel() {
+        queue.async { [connection] in
+            connection.cancel()
         }
     }
 
@@ -66,16 +71,11 @@ public final class Connection {
     }
 
     private func receive() {
-        queue.async { [weak self, logger] in
-            guard let sself = self else {
-                logger.errorMessage("self has already released")
-                return
-            }
-
-            sself.connection.receive(
+        queue.async { [unowned self] in
+            self.connection.receive(
                 minimumIncompleteLength: 1,
                 maximumLength: 255,
-                completion: sself.received
+                completion: self.received
             )
         }
     }

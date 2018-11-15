@@ -16,12 +16,7 @@ final class Client {
         self.logger = logger
         self.brain = brain
 
-        connection.handler = { [weak self, connection] result in
-            guard let sself = self else {
-                logger.errorMessage("self has already released")
-                return
-            }
-
+        connection.handler = { [unowned self, connection] result in
             guard case let .data(data) = result else {
                 if case let .error(error) = result {
                     logger.errorMessage("\(error)")
@@ -38,7 +33,7 @@ final class Client {
                 return
             }
 
-            let oldState = sself.state
+            let oldState = self.state
             for line in response.split(separator: "\n").map(String.init) {
                 guard let message = Message(line: line) else {
                     logger.debugMessage("invalid line: \(line)")
@@ -47,23 +42,24 @@ final class Client {
 
                 logger.debugMessage("received message: \(message)")
 
-                guard let state = sself.state.received(message: message) else {
-                    logger.debugMessage("invalid message: \(message), state: \(sself.state)")
+                guard let state = self.state.received(message: message) else {
+                    logger.debugMessage("invalid message: \(message), state: \(self.state)")
                     continue
                 }
 
                 logger.debugMessage("new state: \(state)")
 
-                sself.state = state
+                self.state = state
             }
 
 
-            if case .ended = sself.state {
+            if case .ended = self.state {
+                connection.cancel()
                 completion(nil)
                 return
             }
 
-            brain.handleStateChange(to: sself.state, from: oldState) { message in
+            brain.handleStateChange(to: self.state, from: oldState) { message in
                 logger.debugMessage("sending: \(message)")
                 connection.send(data: String(message).data(using: .ascii)!)
             }

@@ -115,6 +115,10 @@ public enum PieceKind: Equatable, Hashable {
             ]
         }
     }
+
+    public var promoted: PieceKind? {
+        return self == .hiyoko ? .niwatori : nil
+    }
 }
 
 public enum Piece: Equatable, Hashable {
@@ -132,6 +136,17 @@ public enum Piece: Equatable, Hashable {
         switch self {
         case .black: return true
         case .white: return false
+        }
+    }
+
+    public func promoted(on position: Position) -> Piece? {
+        switch (self, position.x, position.y) {
+        case (.black(.hiyoko), _, 0):
+            return .black(.niwatori)
+        case (.white(.hiyoko), _, 3):
+            return .white(.niwatori)
+        default:
+            return nil
         }
     }
 }
@@ -200,8 +215,14 @@ extension Board {
         return set
     }
 
-    public mutating func move(from: Position, to: Position) {
-        let moving = self[from]
+    public mutating func move(from: Position, to: Position, isPromoted: Bool) {
+        guard var moving = self[from] else { preconditionFailure("piece not found at \(from.debugDescription)") }
+        if isPromoted {
+            guard let promoted = moving.promoted(on: to) else {
+                preconditionFailure("piece at \(to.debugDescription) is not promotable: \(moving)")
+            }
+            moving = promoted
+        }
         self[from] = nil
         self[to] = moving
     }
