@@ -1,147 +1,88 @@
-struct Position: Equatable, Hashable {
-    let x: Int
-    let y: Int
+public struct Board: Equatable, Hashable {
+    private var board: [[Piece?]]
 
-    init?(x: Int, y: Int) {
-        guard 0 <= x && x < 3 && 0 <= y && y < 4 else { return nil }
+    public subscript(position: Position) -> Piece? {
+        get { return board[position.y][position.x] }
+        set(piece) { board[position.y][position.x] = piece }
+    }
 
-        self.x = x
-        self.y = y
+    public init() {
+        board = [
+            [.white(.kirin), .white(.lion), .white(.zou)],
+            [nil, .white(.hiyoko), nil],
+            [nil, .black(.hiyoko), nil],
+            [.black(.zou), .black(.lion), .black(.kirin)],
+        ]
     }
 }
 
-extension Position: ExpressibleByArrayLiteral {
-    init(arrayLiteral elements: Int...) {
-        assert(elements.count == 2, "The array must have just 2 elements to express Position")
-        x = elements[0]
-        y = elements[1]
-    }
-}
-
-extension Position: CustomStringConvertible {
-    var description: String {
-        return "(\(x), \(y))"
-    }
-}
-
-struct Move: Equatable, Hashable {
-    let x: Int
-    let y: Int
-}
-
-extension Move: CustomStringConvertible {
-    var description: String {
-        return "(\(x), \(y))"
-    }
-}
-
-extension Move: ExpressibleByArrayLiteral {
-    init(arrayLiteral elements: Int...) {
-        assert(elements.count == 2, "The array must have just 2 elements to express Move")
-        x = elements[0]
-        y = elements[1]
-    }
-}
-
-extension Position {
-    static func + (lhs: Position, rhs: Move) -> Position? {
-        return Position(x: lhs.x + rhs.x, y: lhs.y + rhs.y)
-    }
-
-    static func - (lhs: Position, rhs: Move) -> Position? {
-        return Position(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
-    }
-}
-
-enum PieceKind: Equatable, Hashable {
-    case hiyoko
-    case zou
-    case kirin
-    case lion
-    case niwatori
-
-    var possibleMoves: Set<Move> {
-        switch self {
-        case .hiyoko:
-            return [
-                [0, -1],
-            ]
-        case .zou:
-            return [
-                [-1, -1], [1, -1], [1, 1], [-1, 1],
-            ]
-        case .kirin:
-            return [
-                [0, -1], [1, 0], [0, 1], [-1, 0],
-            ]
-        case .lion:
-            return [
-                [-1, -1], [-1, 0], [-1, 1],
-                [0, -1], [0, 0], [0, 1],
-                [1, -1], [1, 0], [1, 1],
-            ]
-        case .niwatori:
-            return [
-                [-1, -1], [-1, 0],
-                [0, -1], [0, 0], [0, 1],
-                [1, -1], [1, 0],
-            ]
+extension Board {
+    public var positions: Set<Position> {
+        var positions = Set<Position>()
+        for (y, row) in board.enumerated() {
+            for x in row.indices {
+                positions.insert([x, y])
+            }
         }
+        return positions
     }
-}
 
-enum Piece: Equatable, Hashable {
-    case ours(PieceKind)
-    case theirs(PieceKind)
-
-    var kind: PieceKind {
-        switch self {
-        case let .ours(kind), let .theirs(kind):
-            return kind
+    public var pieces: [Position: Piece] {
+        var pieces: [Position: Piece] = [:]
+        for (y, row) in board.enumerated() {
+            for case let (x, piece?) in row.enumerated() {
+                pieces[[x, y]] = piece
+            }
         }
+        return pieces
     }
 
-    var isOurs: Bool {
-        switch self {
-        case .ours: return true
-        case .theirs: return false
-        }
-    }
-}
-
-extension Piece {
-    static func movablePoints(from position: Position, in board: Board) -> Set<Position> {
-        guard let piece = board[position] else {
+    public func movablePoints(from position: Position) -> Set<Position> {
+        guard let piece = self[position] else {
             return []
         }
 
         var set = Set<Position>()
         for move in piece.kind.possibleMoves {
-            guard let newPosition = piece.isOurs ? position + move : position - move else {
+            guard let newPosition = piece.isBlack ? position + move : position - move else {
                 continue // 壁の外
             }
-            if let newPiece = board[newPosition], piece.isOurs == newPiece.isOurs {
+            if let newPiece = self[newPosition], piece.isBlack == newPiece.isBlack {
                 continue // 自分の駒の上
             }
             set.insert(newPosition)
         }
         return set
     }
-}
 
-struct Board: Equatable, Hashable {
-    private var board: [[Piece?]]
+    public mutating func move(from: Position, to: Position, isPromoted: Bool) -> Piece? {
+        guard var moving = self[from] else { preconditionFailure("piece not found at \(from.debugDescription)") }
+        self[from] = nil
 
-    subscript(position: Position) -> Piece? {
-        return board[position.y][position.x]
+        if isPromoted {
+            guard let promoted = moving.promoted(on: to) else {
+                preconditionFailure("piece at \(to.debugDescription) is not promotable: \(moving)")
+            }
+            moving = promoted
+        }
+
+        let captured = self[to]
+        self[to] = moving
+
+        return captured
     }
 
-    init() {
-        board = [
-            [.theirs(.kirin), .theirs(.lion),   .theirs(.zou)],
-            [nil,             .theirs(.hiyoko), nil],
-            [nil,             .ours(.hiyoko),   nil],
-            [.ours(.zou),     .ours(.lion),     .ours(.kirin)],
-        ]
+    public mutating func drop(kind: PieceKind, to: Position, isBlack: Bool) {
+        precondition(self[to] == nil, "piece should be dropped to an empty position")
+
+        self[to] = isBlack ? .black(kind) : .white(kind)
+    }
+}
+
+extension Board: CustomStringConvertible {
+    public var description: String {
+        return board
+            .map { pieces in pieces.map { piece in piece?.description ?? " " }.joined(separator: "|") }
+            .joined(separator: "\n")
     }
 }

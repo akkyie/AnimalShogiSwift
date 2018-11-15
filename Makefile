@@ -8,7 +8,7 @@ test:
 
 .PHONY: project
 project:
-	swift package generate-xcodeproj
+	swift package generate-xcodeproj --enable-code-coverage
 
 .PHONY: clean
 clean:
@@ -17,4 +17,4 @@ clean:
 
 .PHONY: format
 format:
-	swiftformat **/*.swift
+	swiftformat .
