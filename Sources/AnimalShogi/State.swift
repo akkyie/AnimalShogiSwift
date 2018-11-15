@@ -54,7 +54,8 @@ public enum State: Equatable {
              let (.dropped(id, _, _, _), .dropped(kind, to, isBlack)):
             return .dropped(id: id, isBlack: isBlack, kind: kind, to: to)
 
-        case let (.moved(id, isBlack, _, _, _), .gameOver(isIllegal)):
+        case let (.moved(id, isBlack, _, _, _), .gameOver(isIllegal)),
+             let (.dropped(id, isBlack, _, _), .gameOver(isIllegal)):
             return .waitingResult(id: id, isBlack: isBlack, isIllegal: isIllegal)
 
         case let (.waitingResult(id, isBlack, isIllegal), .result(result)):
