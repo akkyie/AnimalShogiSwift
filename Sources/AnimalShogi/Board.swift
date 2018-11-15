@@ -17,6 +17,16 @@ public struct Board: Equatable, Hashable {
 }
 
 extension Board {
+    public var positions: Set<Position> {
+        var positions = Set<Position>()
+        for (y, row) in board.enumerated() {
+            for x in row.indices {
+                positions.insert([x, y])
+            }
+        }
+        return positions
+    }
+
     public var pieces: [Position: Piece] {
         var pieces: [Position: Piece] = [:]
         for (y, row) in board.enumerated() {
@@ -45,16 +55,27 @@ extension Board {
         return set
     }
 
-    public mutating func move(from: Position, to: Position, isPromoted: Bool) {
+    public mutating func move(from: Position, to: Position, isPromoted: Bool) -> Piece? {
         guard var moving = self[from] else { preconditionFailure("piece not found at \(from.debugDescription)") }
+        self[from] = nil
+
         if isPromoted {
             guard let promoted = moving.promoted(on: to) else {
                 preconditionFailure("piece at \(to.debugDescription) is not promotable: \(moving)")
             }
             moving = promoted
         }
-        self[from] = nil
+
+        let captured = self[to]
         self[to] = moving
+
+        return captured
+    }
+
+    public mutating func drop(kind: PieceKind, to: Position, isBlack: Bool) {
+        precondition(self[to] == nil, "piece should be dropped to an empty position")
+
+        self[to] = isBlack ? .black(kind) : .white(kind)
     }
 }
 

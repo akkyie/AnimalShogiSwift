@@ -1,9 +1,9 @@
-public enum PieceKind: Equatable, Hashable {
-    case hiyoko
-    case zou
-    case kirin
-    case lion
-    case niwatori
+public enum PieceKind: Character, Equatable, Hashable {
+    case hiyoko = "h"
+    case zou = "z"
+    case kirin = "k"
+    case lion = "l"
+    case niwatori = "n"
 
     var possibleMoves: Set<Move> {
         switch self {
@@ -36,6 +36,13 @@ public enum PieceKind: Equatable, Hashable {
 
     public var promoted: PieceKind? {
         return self == .hiyoko ? .niwatori : nil
+    }
+
+    public var droppable: Bool {
+        switch self {
+        case .hiyoko, .zou, .kirin: return true
+        case .lion, .niwatori: return false
+        }
     }
 }
 
@@ -72,16 +79,8 @@ public enum Piece: Equatable, Hashable {
 extension Piece: CustomStringConvertible {
     public var description: String {
         switch self {
-        case .black(.hiyoko): return "h"
-        case .white(.hiyoko): return "H"
-        case .black(.zou): return "z"
-        case .white(.zou): return "Z"
-        case .black(.kirin): return "k"
-        case .white(.kirin): return "K"
-        case .black(.lion): return "l"
-        case .white(.lion): return "L"
-        case .black(.niwatori): return "n"
-        case .white(.niwatori): return "N"
+        case let .black(kind): return String(kind.rawValue).uppercased()
+        case let .white(kind): return String(kind.rawValue)
         }
     }
 }

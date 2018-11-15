@@ -6,7 +6,9 @@ public enum Message: Equatable {
     case agree
     case start
     case move(from: Position, to: Position, isBlack: Bool, isPromoted: Bool)
+    case drop(kind: PieceKind, to: Position, isBlack: Bool)
     case moved(from: Position, to: Position, isBlack: Bool, isPromoted: Bool)
+    case dropped(kind: PieceKind, to: Position, isBlack: Bool)
     case gameOver(isIllegal: Bool)
     case result(Result)
 
@@ -46,8 +48,25 @@ public enum Message: Equatable {
         if line.first == "+" || line.first == "-" {
             var line = line
             let isBlack = line.removeFirst() == "+"
+
+            guard let first = line.first else { return nil }
+
             let fromIndex = line.index(line.startIndex, offsetBy: 2)
             let toIndex = line.index(fromIndex, offsetBy: 2)
+
+            Drop: if let kind = PieceKind(rawValue: first), let to = Position(line[fromIndex ..< toIndex]) {
+                let suffix = line[toIndex...]
+                switch suffix {
+                case "":
+                    self = .drop(kind: kind, to: to, isBlack: isBlack)
+                    return
+                case ",OK":
+                    self = .dropped(kind: kind, to: to, isBlack: isBlack)
+                    return
+                default:
+                    break Drop
+                }
+            }
 
             guard
                 let from = Position(line[..<fromIndex]),
@@ -108,9 +127,13 @@ extension String {
         case .start:
             self = "START"
         case let .move(from, to, isBlack, isPromoted):
-            self = (isBlack ? "+" : "-") + from.description + to.description + (isPromoted ? "+" : "")
+            self = "\(isBlack ? "+" : "-")\(from.description)\(to.description)\(isPromoted ? "+" : "")"
+        case let .drop(kind, to, isBlack):
+            self = "\(isBlack ? "+" : "-")\(kind.rawValue)*\(to.description)"
         case let .moved(from, to, isBlack, isPromoted):
-            self = (isBlack ? "+" : "-") + from.description + to.description + (isPromoted ? "+" : "") + ",OK"
+            self = "\(isBlack ? "+" : "-")\(from.description)\(to.description)\(isPromoted ? "+" : ""),OK"
+        case let .dropped(kind, to, isBlack):
+            self = "\(isBlack ? "+" : "-")\(kind.rawValue)*\(to.description),OK"
         case let .gameOver(isIllegal):
             self = !isIllegal ? "#GAME_OVER" : "#ILLEGAL_MOVE"
         case let .result(result):
