@@ -52,7 +52,6 @@ final class Client {
                 self.state = state
             }
 
-
             if case .ended = self.state {
                 connection.cancel()
                 completion(nil)

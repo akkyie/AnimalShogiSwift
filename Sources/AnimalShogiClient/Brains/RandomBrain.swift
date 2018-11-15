@@ -28,7 +28,7 @@ public class RandomBrain: Brain {
             .filter { _, piece in piece.isBlack == isBlack }
             .flatMap { from, _ in
                 board.movablePoints(from: from).map { to in (from, to) }
-        }
+            }
         let randomIndex = Int.random(in: moves.indices)
         let (from, to) = moves[randomIndex]
         var isPromoted = false
