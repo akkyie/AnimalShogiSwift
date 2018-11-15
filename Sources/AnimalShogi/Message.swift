@@ -1,14 +1,16 @@
-enum Message: Equatable {
+public enum Message: Equatable {
     case beginSummary
+    case gameID(String)
+    case turn(isBlack: Bool)
     case endSummary
     case agree
     case start
-    case gameID(String)
-    case turn(isBlack: Bool)
+    case move(from: Position, to: Position, isBlack: Bool)
+    case moved(from: Position, to: Position, isBlack: Bool)
     case gameOver(isIllegal: Bool)
     case result(Result)
 
-    init?(line: String) {
+    public init?(line: String) {
         switch line {
         case "BEGIN Game_Summary":
             self = .beginSummary
@@ -25,7 +27,7 @@ enum Message: Equatable {
         case "#GAME_OVER":
             self = .gameOver(isIllegal: false)
             return
-        case "#ILLEGAL_MOVE":
+        case "#ILLEGAL":
             self = .gameOver(isIllegal: true)
             return
         case "#WIN":
@@ -41,25 +43,71 @@ enum Message: Equatable {
             break
         }
 
-        let parts = line.split(separator: ":")
-        guard parts.count == 2 else {
+        if line.first == "+" || line.first == "-" {
+            var line = line
+            let isBlack = line.removeFirst() == "+"
+            let fromIndex = line.index(line.startIndex, offsetBy: 2)
+            let toIndex = line.index(fromIndex, offsetBy: 2)
+
+            guard
+                let from = Position(line[..<fromIndex]),
+                let to = Position(line[fromIndex ..< toIndex])
+            else { return nil }
+
+            let suffix = line[toIndex...]
+            if suffix.isEmpty {
+                self = .move(from: from, to: to, isBlack: isBlack)
+                return
+            } else if suffix == ",OK" {
+                self = .moved(from: from, to: to, isBlack: isBlack)
+                return
+            }
+
             return nil
         }
 
-        switch (parts[0], parts[1]) {
-        case let ("Game_ID", id) where !id.isEmpty:
-            self = .gameID(String(id))
-            return
+        let parts = line.split(separator: ":")
+        switch (parts.first, parts.last) {
         case ("Your_Turn", "+"):
             self = .turn(isBlack: true)
             return
         case ("Your_Turn", "-"):
             self = .turn(isBlack: false)
             return
+        case let ("Game_ID", id?):
+            self = .gameID(String(id))
+            return
         default:
             break
         }
 
         return nil
+    }
+}
+
+extension String {
+    public init(_ message: Message) {
+        switch message {
+        case .beginSummary:
+            self = "BEGIN Game_Summary"
+        case let .gameID(id):
+            self = id
+        case let .turn(isBlack):
+            self = "Your_Turn:\(isBlack ? "+" : "-")"
+        case .endSummary:
+            self = "END Game_Summary"
+        case .agree:
+            self = "AGREE"
+        case .start:
+            self = "START"
+        case let .move(from, to, isBlack):
+            self = (isBlack ? "+" : "-") + from.description + to.description
+        case let .moved(from, to, isBlack):
+            self = (isBlack ? "+" : "-") + from.description + to.description + ",OK"
+        case let .gameOver(isIllegal):
+            self = !isIllegal ? "#GAME_OVER" : "#ILLEGAL_MOVE"
+        case let .result(result):
+            self = result.description
+        }
     }
 }
