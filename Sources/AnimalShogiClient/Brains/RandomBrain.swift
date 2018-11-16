@@ -20,7 +20,7 @@ public class RandomBrain: Brain {
             _ = board.move(from: from, to: to, isPromoted: isPromoted)
             thinkNext(sendMessage: sendMessage)
         case (.dropped(_, !isBlack, let kind, let to), _): // opponent moved
-            _ = board.drop(kind: kind, to: to, isBlack: isBlack)
+            _ = board.drop(kind: kind, to: to, isBlack: !isBlack)
             thinkNext(sendMessage: sendMessage)
         default:
             break
