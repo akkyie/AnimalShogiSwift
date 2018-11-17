@@ -31,7 +31,7 @@ public final class Connection {
 
         connection.stateUpdateHandler = { [logger, unowned self] connectionState in
             queue.async {
-                logger.debugMessage("connection is \(connectionState)")
+                logger.infoMessage("connection is \(connectionState)")
                 switch connectionState {
                 case let .waiting(error),
                      let .failed(error):
@@ -63,9 +63,9 @@ public final class Connection {
 
     public func send(data: Data) {
         queue.async { [connection, logger] in
-            logger.errorMessage("sending: \(data)")
+            logger.infoMessage("sending: \(data)")
             connection.send(content: data, completion: .contentProcessed { error in
-                logger.errorMessage("send: \(error?.debugDescription ?? "ok")")
+                logger.infoMessage("send: \(error?.debugDescription ?? "ok")")
             })
         }
     }

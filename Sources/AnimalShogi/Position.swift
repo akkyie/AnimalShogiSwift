@@ -35,12 +35,14 @@ extension Position: CustomDebugStringConvertible {
 extension Position {
     init?<T: StringProtocol>(_ string: T) {
         guard string.count == 2 else { return nil }
+
         switch string.first {
         case "1": x = 0
         case "2": x = 1
         case "3": x = 2
         default: return nil
         }
+
         switch string.last {
         case "a": y = 0
         case "b": y = 1
@@ -54,12 +56,6 @@ extension Position {
 struct Move: Equatable, Hashable {
     let x: Int
     let y: Int
-}
-
-extension Move: CustomDebugStringConvertible {
-    var debugDescription: String {
-        return "[\(x), \(y)]"
-    }
 }
 
 extension Move: ExpressibleByArrayLiteral {
