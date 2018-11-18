@@ -6,7 +6,7 @@ let package = Package(
     name: "AnimalShogi",
     products: [
         .library(name: "AnimalShogi", targets: ["AnimalShogi"]),
-        .executable(name: "AnimalShogiClient", targets: ["AnimalShogiClient"]),
+        .executable(name: "asc", targets: ["AnimalShogiClient"]),
     ],
     dependencies: [
         .package(url: "https://github.com/kylef/Commander", from: "0.8.0"),
