@@ -1,12 +1,9 @@
-public enum Message: Equatable {
+public enum ServerMessage: Equatable {
     case beginSummary
     case gameID(String)
     case turn(Turn)
     case endSummary
-    case agree
     case start
-    case move(turn: Turn, from: Position, to: Position, isPromoted: Bool)
-    case drop(turn: Turn, kind: Piece.Kind, to: Position)
     case moved(turn: Turn, from: Position, to: Position, isPromoted: Bool)
     case dropped(turn: Turn, kind: Piece.Kind, to: Position)
     case gameOver(isIllegal: Bool)
@@ -20,9 +17,6 @@ public enum Message: Equatable {
             return
         case "END Game_Summary":
             self = .endSummary
-            return
-        case "AGREE":
-            self = .agree
             return
         case "START":
             self = .start
@@ -55,9 +49,6 @@ public enum Message: Equatable {
             Drop: if let kind = Piece.Kind(rawValue: kindchar), let to = Position(line[fromIndex ..< toIndex]) {
                 let suffix = line[toIndex...]
                 switch suffix {
-                case "":
-                    self = .drop(turn: turn, kind: kind, to: to)
-                    return
                 case ",OK":
                     self = .dropped(turn: turn, kind: kind, to: to)
                     return
@@ -73,12 +64,6 @@ public enum Message: Equatable {
 
             let suffix = line[toIndex...]
             switch suffix {
-            case "":
-                self = .move(turn: turn, from: from, to: to, isPromoted: false)
-                return
-            case "+":
-                self = .move(turn: turn, from: from, to: to, isPromoted: true)
-                return
             case ",OK":
                 self = .moved(turn: turn, from: from, to: to, isPromoted: false)
                 return
@@ -109,33 +94,22 @@ public enum Message: Equatable {
     }
 }
 
+public enum ClientMessage: Equatable {
+    case agree
+    case move(turn: Turn, from: Position, to: Position, isPromoted: Bool)
+    case drop(turn: Turn, kind: Piece.Kind, to: Position)
+    case chat(String)
+}
+
 extension String {
-    public init(_ message: Message) {
+    public init(_ message: ClientMessage) {
         switch message {
-        case .beginSummary:
-            self = "BEGIN Game_Summary"
-        case let .gameID(id):
-            self = "Game_ID:\(id)"
-        case let .turn(turn):
-            self = "Your_Turn:\(turn.rawValue)"
-        case .endSummary:
-            self = "END Game_Summary"
         case .agree:
             self = "AGREE"
-        case .start:
-            self = "START"
         case let .move(turn, from, to, isPromoted):
             self = "\(turn.rawValue)\(from.description)\(to.description)\(isPromoted ? "+" : "")"
         case let .drop(turn, kind, to):
             self = "\(turn.rawValue)\(kind.rawValue)*\(to.description)"
-        case let .moved(turn, from, to, isPromoted):
-            self = "\(turn.rawValue)\(from.description)\(to.description)\(isPromoted ? "+" : ""),OK"
-        case let .dropped(turn, kind, to):
-            self = "\(turn.rawValue)\(kind.rawValue)*\(to.description),OK"
-        case let .gameOver(isIllegal):
-            self = !isIllegal ? "#GAME_OVER" : "#ILLEGAL"
-        case let .result(result):
-            self = result.description
         case let .chat(message):
             self = message
         }

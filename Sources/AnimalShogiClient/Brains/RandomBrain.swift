@@ -1,7 +1,7 @@
 import AnimalShogi
 
 public class RandomBrain: Brain {
-    public func handleBoardChange(summary: GameSummary, board: Board, sendMessage: (Message) -> Void) {
+    public func handleBoardChange(summary: GameSummary, board: Board, sendMessage: (ClientMessage) -> Void) {
         let captured = summary.turn == .black ? board.blackCaptured : board.whiteCaptured
 
         if
