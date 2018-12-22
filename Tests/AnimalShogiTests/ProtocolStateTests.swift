@@ -7,7 +7,7 @@ final class StateTests: XCTestCase {
 
         let testcases: [(
             ProtocolState, /* line: */ UInt,
-            Message,
+            ServerMessage,
             ProtocolState?,
             /* hasStarted: */ Bool?, /* hasEnded: */ Bool?, /* summary: */ GameSummary?
         )] = [
@@ -24,12 +24,12 @@ final class StateTests: XCTestCase {
             (.waitingTurn(id: "asdf"), #line,
              .turn(.black),
              .waitingEndSummary(summary),
-             false, false, summary),
+             false, false, nil),
 
             (.waitingTurn(id: "asdf"), #line,
              .turn(.white),
              .waitingEndSummary(GameSummary(id: "asdf", turn: .white)),
-             false, false, GameSummary(id: "asdf", turn: .white)),
+             false, false, nil),
 
             (.waitingEndSummary(summary), #line,
              .endSummary,

@@ -20,12 +20,30 @@
         }
       },
       {
-        "package": "Willow",
-        "repositoryURL": "https://github.com/Nike-Inc/Willow.git",
+        "package": "swift-nio",
+        "repositoryURL": "https://github.com/apple/swift-nio",
         "state": {
           "branch": null,
-          "revision": "d1304b6374cace1e4008b5f5faec7ce973f54ede",
-          "version": "5.1.0"
+          "revision": "a20e129c22ad00a51c902dca54a5456f90664780",
+          "version": "1.12.0"
+        }
+      },
+      {
+        "package": "swift-nio-extras",
+        "repositoryURL": "https://github.com/apple/swift-nio-extras",
+        "state": {
+          "branch": null,
+          "revision": "28154e042e1de46c0fb7da93f9b6d6518ef09156",
+          "version": "0.1.2"
+        }
+      },
+      {
+        "package": "swift-nio-zlib-support",
+        "repositoryURL": "https://github.com/apple/swift-nio-zlib-support.git",
+        "state": {
+          "branch": null,
+          "revision": "37760e9a52030bb9011972c5213c3350fa9d41fd",
+          "version": "1.0.0"
         }
       }
     ]

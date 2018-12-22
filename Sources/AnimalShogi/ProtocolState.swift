@@ -4,16 +4,6 @@ public enum GameResult: Equatable {
     case lose
 }
 
-extension GameResult: CustomStringConvertible {
-    public var description: String {
-        switch self {
-        case .win: return "#WIN"
-        case .draw: return "#DRAW"
-        case .lose: return "#LOSE"
-        }
-    }
-}
-
 public struct GameSummary: Equatable {
     public let id: String
     public let turn: Turn
@@ -29,7 +19,7 @@ public enum ProtocolState: Equatable {
     case waitingResult(summary: GameSummary, isIllegal: Bool)
     case ended(summary: GameSummary, isIllegal: Bool, result: GameResult)
 
-    public func received(message: Message) -> ProtocolState? {
+    public func received(message: ServerMessage) -> ProtocolState? {
         switch (self, message) {
         case (.waitingBeginSummary, .beginSummary):
             return .waitingID
@@ -74,8 +64,7 @@ public enum ProtocolState: Equatable {
 
     public var summary: GameSummary? {
         switch self {
-        case let .waitingEndSummary(summary),
-             let .starting(summary),
+        case let .starting(summary),
              let .started(summary),
              let .waitingResult(summary, _),
              let .ended(summary, _, _):

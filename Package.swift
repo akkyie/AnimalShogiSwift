@@ -6,11 +6,12 @@ let package = Package(
     name: "AnimalShogi",
     products: [
         .library(name: "AnimalShogi", targets: ["AnimalShogi"]),
-        .executable(name: "AnimalShogiClient", targets: ["AnimalShogiClient"]),
+        .executable(name: "asc", targets: ["AnimalShogiClient"]),
     ],
     dependencies: [
         .package(url: "https://github.com/kylef/Commander", from: "0.8.0"),
-        .package(url: "https://github.com/Nike-Inc/Willow.git", from: "5.1.0"),
+        .package(url: "https://github.com/apple/swift-nio", from: "1.0.0"),
+        .package(url: "https://github.com/apple/swift-nio-extras", from: "0.1.2"),
     ],
     targets: [
         .target(
@@ -19,7 +20,7 @@ let package = Package(
         ),
         .target(
             name: "AnimalShogiClient",
-            dependencies: ["AnimalShogi", "Commander", "Willow"]
+            dependencies: ["AnimalShogi", "NIO", "NIOExtras", "Commander"]
         ),
         .testTarget(
             name: "AnimalShogiTests",

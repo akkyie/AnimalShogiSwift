@@ -3,7 +3,7 @@ public struct Position: Equatable, Hashable {
     let y: Int
 
     init?(x: Int, y: Int) {
-        guard 0 <= x && x < 3 && 0 <= y && y < 4 else { return nil }
+        guard 0 <= x, x < 3, 0 <= y, y < 4 else { return nil }
 
         self.x = x
         self.y = y
