@@ -25,7 +25,13 @@ final class ClientTests: XCTestCase {
             XCTFail("No event should not to be received, but got \(event)")
         })
         client.handle(message: .endSummary, onEvent: { (event: Client.Event) in
-            XCTAssertEqual(event, .message(.agree))
+            switch event {
+            case .message(.agree),
+                 .message(.login):
+                break
+            default:
+                XCTFail("\(event)")
+            }
         })
 
         // FIXME: Add more tests

@@ -19,13 +19,16 @@ public final class Client {
     public typealias EventHandler = (Event) -> Void
     public typealias SendMessage = (ClientMessage) throws -> Void
 
+    public let name: String
     public let brain: Brain
 
     public private(set) var board: Board?
 
     private var state: ProtocolState = .waitingBeginSummary
 
-    public init(brain: Brain) {
+    public init(name: String = "AnimalShogiSwift", brain: Brain) {
+        let uuid = UUID().uuidString.split(separator: "-").first ?? ""
+        self.name = "\(name) (\(uuid))"
         self.brain = brain
     }
 
@@ -40,6 +43,7 @@ public final class Client {
 
         if case .starting = state, board == nil {
             send(.message(.agree))
+            send(.message(.login(name: name)))
 
             let board = Board()
             self.board = board
