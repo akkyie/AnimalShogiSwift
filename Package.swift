@@ -10,7 +10,6 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/kylef/Commander", from: "0.8.0"),
-        .package(url: "https://github.com/Nike-Inc/Willow", from: "5.1.0"),
         .package(url: "https://github.com/apple/swift-nio", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-nio-extras", from: "0.1.2"),
     ],
@@ -21,7 +20,7 @@ let package = Package(
         ),
         .target(
             name: "AnimalShogiClient",
-            dependencies: ["AnimalShogi", "NIO", "NIOExtras", "Commander", "Willow"]
+            dependencies: ["AnimalShogi", "NIO", "NIOExtras", "Commander"]
         ),
         .testTarget(
             name: "AnimalShogiTests",

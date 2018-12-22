@@ -3,22 +3,11 @@ import Commander
 import Foundation
 import NIO
 import NIOExtras
-import Willow
-
-extension Logger {
-    fileprivate static func `for`(_: String) -> Logger {
-        return Logger(logLevels: .all, writers: [
-            ConsoleWriter(method: .print),
-        ])
-    }
-}
 
 let main = command(
     Option("host", default: "localhost"),
     Option("port", default: 8080)
 ) { host, port in
-    let logger = Logger.for("main")
-
     let brain = RandomBrain()
     let client = Client(brain: brain)
 
@@ -38,12 +27,12 @@ let main = command(
 
     do {
         let channel = try bootstrap.connect(host: host, port: port).wait()
-        logger.infoMessage("Connected: \(host):\(port)")
+        print("Connected: \(host):\(port)")
 
         try channel.closeFuture.wait()
-        logger.infoMessage("Connection closed: \(host):\(port)")
+        print("Connection closed: \(host):\(port)")
     } catch {
-        logger.errorMessage("\(error)")
+        print("\(error)")
     }
 }
 
