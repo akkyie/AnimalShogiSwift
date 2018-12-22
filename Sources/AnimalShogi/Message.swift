@@ -8,6 +8,7 @@ public enum ServerMessage: Equatable {
     case dropped(turn: Turn, kind: Piece.Kind, to: Position)
     case gameOver(isIllegal: Bool)
     case result(GameResult)
+    case login(name: String)
     case chat(String)
 
     public init(line: String) {
@@ -86,6 +87,9 @@ public enum ServerMessage: Equatable {
         case let ("Game_ID", id?):
             self = .gameID(String(id))
             return
+        case let ("LOGIN", name?):
+            self = .login(name: String(name))
+            return
         default:
             break
         }
@@ -99,6 +103,7 @@ public enum ClientMessage: Equatable {
     case move(turn: Turn, from: Position, to: Position, isPromoted: Bool)
     case drop(turn: Turn, kind: Piece.Kind, to: Position)
     case chat(String)
+    case login(name: String)
 }
 
 extension String {
@@ -112,6 +117,8 @@ extension String {
             self = "\(turn.rawValue)\(kind.rawValue)*\(to.description)"
         case let .chat(message):
             self = message
+        case let .login(name):
+            self = "LOGIN:\(name)"
         }
     }
 }
